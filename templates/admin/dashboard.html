@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h2>Admin Dashboard</h2>
+    <p style="color: var(--text-muted);">Overview of platform activity</p>
+</div>
+
+<div class="grid" style="margin-bottom: 2rem;">
+    <div class="card" style="border-left: 4px solid var(--primary);">
+        <h3 style="color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase;">Total Users</h3>
+        <div style="font-size: 2rem; font-weight: 800;">{{ users|length }}</div>
+    </div>
+    <div class="card" style="border-left: 4px solid var(--secondary);">
+        <h3 style="color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase;">Total Orders</h3>
+        <div style="font-size: 2rem; font-weight: 800;">{{ orders|length }}</div>
+    </div>
+    <div class="card" style="border-left: 4px solid var(--danger);">
+        <h3 style="color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase;">Total Products</h3>
+        <div style="font-size: 2rem; font-weight: 800;">{{ products|length }}</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <div class="card">
+        <h3>Recent Users</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users[-5:] %}
+                <tr>
+                    <td style="font-weight: 500;">{{ user.username }}</td>
+                    <td><span class="badge" style="background: #E5E7EB;">{{ user.role }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card">
+        <h3>Platform Orders</h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User ID</th>
+                    <th>Status</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders[:5] %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.user_id }}</td>
+                    <td><span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span></td>
+                    <td style="font-weight: 600;">${{ "%.2f"|format(order.total_amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

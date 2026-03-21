@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Available Products</h2>
+    <a href="{{ url_for('restaurant.cart') }}" class="btn btn-secondary">
+        View Cart
+    </a>
+</div>
+
+{% if products %}
+<div class="grid">
+    {% for product in products %}
+    <div class="card">
+        <h3 class="card-title">{{ product.name }}</h3>
+        <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem; min-height: 40px;">
+            {{ product.description }}
+        </p>
+        <div class="card-price">${{ "%.2f"|format(product.price) }}</div>
+        
+        <form action="{{ url_for('restaurant.cart') }}" method="POST" style="display: flex; gap: 0.5rem;">
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <input type="number" name="quantity" class="form-control" value="1" min="1" max="{{ product.stock }}" style="width: 80px;" required>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Add to Cart</button>
+        </form>
+        <div style="text-align: right; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+            {{ product.stock }} in stock
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <p style="color: var(--text-muted);">No products currently available.</p>
+</div>
+{% endif %}
+{% endblock %}

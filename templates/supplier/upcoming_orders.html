@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<ul style="display: flex; gap: 2rem; list-style: none; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+    <li style="font-weight: 700; color: var(--primary); cursor: pointer;" onclick="document.getElementById('orders').style.display='block'; document.getElementById('products').style.display='none';">Upcoming Orders</li>
+    <li style="font-weight: 600; color: var(--text-muted); cursor: pointer;" onclick="document.getElementById('orders').style.display='none'; document.getElementById('products').style.display='block';">My Products</li>
+</ul>
+
+<div id="orders">
+    <h2>Upcoming Orders</h2>
+    {% if orders %}
+        {% for order in orders %}
+        <div class="card" style="margin-top: 1.5rem; border-left: 4px solid var(--primary);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                    <h3 style="margin-bottom: 0.25rem;">Order #{{ order.id }}</h3>
+                    <div style="color: var(--text-muted); font-size: 0.875rem;">Placed on {{ order.date_ordered.strftime('%Y-%m-%d %H:%M') }}</div>
+                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span>
+                    
+                    <form action="{{ url_for('supplier.update_order_status', order_id=order.id) }}" method="POST" style="display: flex; gap: 0.5rem;">
+                        <select name="status" class="form-control" style="padding: 0.5rem; height: auto;">
+                            <option value="Pending" {% if order.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Processed" {% if order.status == 'Processed' %}selected{% endif %}>Processed</option>
+                            <option value="Shipped" {% if order.status == 'Shipped' %}selected{% endif %}>Shipped</option>
+                            <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                        </select>
+                        <button type="submit" class="btn btn-secondary" style="padding: 0.5rem 1rem;">Update</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div style="background: #F9FAFB; padding: 1rem; border-radius: 8px;">
+                <h4 style="margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">Items Ordered</h4>
+                {% for item in order.items %}
+                    {% if item.product_id in my_products|map(attribute='id') %}
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                        <span>Product ID: {{ item.product_id }}</span>
+                        <span style="font-weight: 600;">Qty: {{ item.quantity }}</span>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card" style="text-align: center; padding: 3rem; margin-top: 1.5rem;">
+            <p style="color: var(--text-muted);">No upcoming orders for your products.</p>
+        </div>
+    {% endif %}
+</div>
+
+<div id="products" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2>My Inventory</h2>
+        <button class="btn btn-primary" onclick="document.getElementById('addProductForm').classList.toggle('hidden')">Add New Product</button>
+    </div>
+    
+    <div id="addProductForm" class="card hidden" style="margin-bottom: 2rem; display: none;">
+        <h3>Add Product</h3>
+        <form action="{{ url_for('supplier.add_product') }}" method="POST" style="margin-top: 1rem;">
+            <div class="grid">
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Price ($)</label>
+                    <input type="number" step="0.01" name="price" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Stock Quantity</label>
+                    <input type="number" name="stock" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Product</button>
+        </form>
+    </div>
+    
+    <div class="grid">
+        {% for product in my_products %}
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <h3 class="card-title" style="margin: 0;">{{ product.name }}</h3>
+                <span style="font-weight: 700; color: var(--secondary);">${{ "%.2f"|format(product.price) }}</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem;">{{ product.description }}</p>
+            <div style="font-size: 0.875rem;">
+                <span style="color: var(--text-muted);">Current Stock:</span> 
+                <span style="font-weight: 600; {% if product.stock < 10 %}color: var(--danger);{% endif %}">{{ product.stock }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    // Simple script to toggle forms
+    document.querySelector('.hidden').style.display = 'none';
+    document.querySelector('.btn-primary').addEventListener('click', function() {
+        const form = document.getElementById('addProductForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+</script>
+{% endblock %}

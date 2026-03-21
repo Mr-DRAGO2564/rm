@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>My Orders</h2>
+    <a href="{{ url_for('restaurant.products') }}" class="btn btn-primary">New Order</a>
+</div>
+
+{% if orders %}
+    {% for order in orders %}
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+            <div>
+                <span style="font-weight: 700; font-size: 1.1rem;">Order #{{ order.id }}</span>
+                <span style="color: var(--text-muted); margin-left: 1rem;">{{ order.date_ordered.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+            <div>
+                <span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span>
+            </div>
+        </div>
+        
+        <table class="table" style="margin-top: 0;">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items %}
+                <tr>
+                    <td>{{ item.product_id }}</td> {# Ideally, we join with product table for name #}
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ "%.2f"|format(item.price) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div style="text-align: right; margin-top: 1rem; font-weight: 700;">
+            Total: <span style="color: var(--primary); font-size: 1.25rem;">${{ "%.2f"|format(order.total_amount) }}</span>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <p style="color: var(--text-muted);">You haven't placed any orders yet.</p>
+</div>
+{% endif %}
+{% endblock %}
